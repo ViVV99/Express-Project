@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Document</title>
+</head>
+<body>
+    <section class="user-table">
+        <h4 id="table-title"></h4>
+        <table id="table">
+            <thead>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Alter</th>
+                <th>Delete</th>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+        <!-- TODO: Implement a code to, when making some action, show this text -->
+        <!-- <p class="loading">Loading...</p> -->
+    </section>
+    <div id="adduser-div">
+        <form id="adduser-form" method="POST" action="api/v1/users/">
+            <label for="adduser">Add new user here: </label>
+            <input id="adduser-input" name= "newuser">
+            <button type="submit">Send</button>
+        </form>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        const host = 'localhost:3000';
+        const tableTitle = document.getElementById('table-title');
+        
+        const addData = async (e) => {
+            try {
+                e.preventDefault();
+
+                // gets the input value and transforms it into a object
+                const newUser = document.getElementById('adduser-input');
+                const postData = { name: newUser.value };
+
+                const resp = await axios.post('http://' + host + '/api/v1/users', postData);
+                
+                
+                getallData();
+            } catch (error) {
+                console.log(error)
+            }
+            
+        }
+
+        const getallData = async () => {
+            try {
+                // get the response from the server
+                let resp = await axios.get('http://' + host + '/api/v1/users');
+                
+                // validates if everything occured right 
+                if(resp.status === 200 && resp.data.sucess) {
+                    // pick the send data to append on the table
+                    let { data } = resp.data;
+
+                    const table = document.getElementById('table');
+
+                    // if there is no users, displays 'add new users'
+                    tableTitle.innerText = (data.length < 1 )? 'Add new users!': 'Users:';
+                    // create a div for each user's data
+                    const htmlDataUser = data.map(user => {
+                        let { id, name } = user;
+                        return `<tr>
+                                    <td>${id}</td>
+                                    <td>${name}</td>
+                                    <td class="alter"><a href="
+                                        ./alter-data.html?id=${id}">link</a></td>
+                                    <td class="delete"><button>del</button></td>
+                                </tr>`;
+                    }).join('')
+                    table.getElementsByTagName('tbody')[0].innerHTML = htmlDataUser;
+                }
+            } catch (error) {
+                console.log(error);
+                tableTitle.innerText = 'An error has occurred';
+            }
+       }
+
+        const deleteData = async (e) => {
+            try {
+                // verify if the delete button has been clicked 
+                const delButton = e.target;
+                //console.log(delButton.parentElement);
+                if(delButton.parentElement.classList.contains('delete')) {
+
+                    //gets the table row, and then gets the user id
+                    const tableRow = delButton.parentElement.parentElement;
+                    //console.log(tableRow.children[0].children[0]);
+                    const userId = tableRow.children[0].innerText;
+                    //console.log(userId);
+
+                    const resp = await axios.delete('http://' + host + '/api/v1/users/' + userId);
+                    console.log(resp);
+                    if(resp.status === 200 && resp.data.sucess){
+                        getallData();
+                    }
+                }
+            } catch (error) {
+                console.log(error);   
+            }
+        }
+
+        // gets all data
+        getallData();
+        // delete the data
+        document.getElementById('table').addEventListener('click',deleteData);
+        document.getElementById('adduser-form').addEventListener('submit',addData);
+
+    </script>
+</body>
+</html>

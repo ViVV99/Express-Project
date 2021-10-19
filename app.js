@@ -3,15 +3,19 @@ const app = express();
 let data = require('./data');
 const users = require('./routes/users');
 
-//for future use
+
 app.use(express.static('public'));
 app.use(express.json());
 
-app.use('/api/v1/users', users);
 
-app.get('/', (req, res) => {
-    res.status(200).send('Halow worldi');
+// For treating cross-origin
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
 })
+
+app.use('/api/v1/users' ,users);
 
 const port = 3000
 

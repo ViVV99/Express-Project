@@ -33,7 +33,7 @@ const addUser = (req, res) => {
         name: name
     };
     data.push(newUser);
-    data.sort((item1, item2) => Number(item1.id) > Number(item2.id));
+    data.sort((item1, item2) => Number(item1.id) - Number(item2.id));
 
     res.status(200).json({sucess: true, data: newUser});
 }
@@ -46,7 +46,7 @@ const addUser = (req, res) => {
  */
 const getSingleUser = (req, res) => {
     const { id } = req.params;
-
+    console.log('GET');
     const user = data.find((item) => item.id === Number(id));
     if(!user) {
         return res
@@ -70,7 +70,7 @@ const updateUser = (req, res) => {
     const { name } = req.body;
 
     const user = data.find((item) => item.id === Number(id));
-
+    console.log('User before change:', user);
     if(!user) {
         return res
         .status(401)
@@ -79,7 +79,9 @@ const updateUser = (req, res) => {
         );
     }
 
-
+    console.log('User id:', user.id);
+    console.log('User name:', user.name)
+    console.log('Name from request:', name);
     const newUser = data.map((item) => {
         if(item.id === Number(id))
             item.name = name;
@@ -97,33 +99,29 @@ const updateUser = (req, res) => {
  * @description deletes a user from a specified id
  */
 const deleteUser = (req, res) => {
-    const { id } = req.params;
+    try {
+        const { id } = req.params;
 
-    const user = data.find((item) => item.id === Number(id));
-
-    if(!user) {
-        return res
-        .status(401)
-        .json(
-            {sucess: false, msg: 'User not found'}
-        );
+        const user = data.find((item) => item.id === Number(id));
+        if(!user) {
+            return res
+            .status(401)
+            .json(
+                {sucess: false, msg: 'User not found'}
+            );
+        }
+   
+        const userIndex = data.findIndex(item => item.id === Number(id));
+        
+        // remove user
+        data.splice(userIndex, 1);
+        data.sort((item1, item2) => Number(item1.id) - Number(item2.id));
+        res.status(200).json({sucess: true, data: user});
+        
+    } catch (error) {
+        console.log(error);
     }
-    // data.map((item) => {
-    //     if(item.id === Number(id)) {
-    //         item.id = undefined;
-    //         item.name = undefined;
-    //         return true;
-    //     }
-    // });
-
-    
-    const userIndex = data.findIndex(item => item.id === Number(id));
-
-    //remove user
-    data.splice(userIndex, userIndex + 1);
-
-    res.status(200).json({sucess: true, data: user});
-    data.sort((item1, item2) => Number(item1.id) > Number(item2.id));
+   
 }
 
 module.exports = {

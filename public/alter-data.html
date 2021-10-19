@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit User</title>
+</head>
+<body>
+    <div>
+        <form action="api/v1/users/">
+            <label for="userName"></label>
+            <input id="userName" name="username" type="text" value="">
+            <button id="submitButton" type="submit">Send</button>
+        </form>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        const host = 'localhost:3000';
+        const params = window.location.search;
+        const id = new URLSearchParams(params).get('id');
+        const editForm = document.getElementsByTagName('form')[0];
+        const submitButton = document.getElementById('submitButton');
+        editForm.setAttribute('action', `api/v1/users/${id}`);
+        console.log(id);
+
+        const getData = async (id) =>{
+            try {
+                const resp = await axios.get(`/api/v1/users/${id}`);
+
+                if(resp.status===200 && resp.data.sucess){
+                    const { data } = resp.data;
+                    const input = document.getElementById('userName');
+
+                    input.setAttribute('value', data.name);
+                }
+            } catch (error) {
+                editForm.innerHTML = `
+                <p>The user with the id ${id} doesn't exist</p>
+                <a href="index.html">Return to the home page</a>`;
+            }
+        }
+        
+        const editData = async (e) => {
+            e.preventDefault();
+            submitButton.innerText = 'Loading';
+            const newUserName = document.getElementById('userName').value;
+            console.log(newUserName);
+            const newData = {
+                id: id,
+                name: newUserName
+            }
+            const resp = await axios.patch('http://' + host + '/api/v1/users/' + id, newData);
+            console.log(resp);
+            submitButton.innerText = 'Send';
+            
+            window.location.href = 'http://' + host + '/';
+        }
+
+        editForm.addEventListener('submit', editData);
+        getData(id);
+        
+    </script>
+</body>
+</html>
